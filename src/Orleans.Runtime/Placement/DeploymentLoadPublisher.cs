@@ -208,7 +208,7 @@ namespace Orleans.Runtime
             }
         }
 
-        private void NotifyAllStatisticsChangeEventsSubscribers(SiloAddress silo, SiloRuntimeStatistics stats)
+        private void NotifyAllStatisticsChangeEventsSubscribers(SiloAddress silo, SiloRuntimeStatistics? stats)
         {
             lock (_siloStatisticsChangeListeners)
             {

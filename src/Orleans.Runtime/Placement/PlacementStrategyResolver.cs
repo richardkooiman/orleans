@@ -17,11 +17,11 @@ namespace Orleans.Runtime.Placement
     /// </summary>
     public sealed class PlacementStrategyResolver
     {
-        private readonly ConcurrentDictionary<GrainType, PlacementStrategy> _resolvedStrategies = new();
-        private readonly Func<GrainType, PlacementStrategy> _getStrategyInternal;
+        private readonly ConcurrentDictionary<GrainType, PlacementStrategy?> _resolvedStrategies = new();
+        private readonly Func<GrainType, PlacementStrategy?> _getStrategyInternal;
         private readonly IPlacementStrategyResolver[] _resolvers;
         private readonly GrainPropertiesResolver _grainPropertiesResolver;
-        private readonly PlacementStrategy _defaultPlacementStrategy;
+        private readonly PlacementStrategy? _defaultPlacementStrategy;
         private readonly IServiceProvider _services;
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace Orleans.Runtime.Placement
         /// <summary>
         /// Gets the placement strategy associated with the provided grain type.
         /// </summary>
-        public PlacementStrategy GetPlacementStrategy(GrainType grainType) => _resolvedStrategies.GetOrAdd(grainType, _getStrategyInternal);
+        public PlacementStrategy? GetPlacementStrategy(GrainType grainType) => _resolvedStrategies.GetOrAdd(grainType, _getStrategyInternal);
 
-        private bool TryGetNonDefaultPlacementStrategy(GrainType grainType, out PlacementStrategy strategy)
+        private bool TryGetNonDefaultPlacementStrategy(GrainType grainType, out PlacementStrategy? strategy)
         {
             _grainPropertiesResolver.TryGetGrainProperties(grainType, out var properties);
 
@@ -76,7 +76,7 @@ namespace Orleans.Runtime.Placement
             return false;
         }
 
-        private PlacementStrategy GetPlacementStrategyInternal(GrainType grainType)
+        private PlacementStrategy? GetPlacementStrategyInternal(GrainType grainType)
         {
             if (TryGetNonDefaultPlacementStrategy(grainType, out var result))
             {

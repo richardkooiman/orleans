@@ -147,7 +147,7 @@ namespace Orleans.Runtime.Messaging
             }
         }
 
-        internal void RecordClosedConnection(GatewayInboundConnection connection)
+        internal void RecordClosedConnection(GatewayInboundConnection? connection)
         {
             if (connection == null) return;
 
@@ -287,7 +287,7 @@ namespace Orleans.Runtime.Messaging
                 RunContinuationsAsynchronously = true
             };
 
-            private GatewayInboundConnection _connection;
+            private GatewayInboundConnection? _connection;
             private int _dropped;
             private CoarseStopwatch _disconnectedSince;
 
@@ -306,7 +306,7 @@ namespace Orleans.Runtime.Messaging
 
             private bool IsDropped => Volatile.Read(ref _dropped) == 1;
 
-            public GatewayInboundConnection Connection => _connection;
+            public GatewayInboundConnection? Connection => _connection;
 
             public TimeSpan DisconnectedSince => _disconnectedSince.Elapsed;
 

@@ -234,7 +234,7 @@ namespace Orleans.Runtime.Placement
 #pragma warning restore IDE0052 // Remove unread private members
             private readonly object _lockObj = new();
             private readonly PlacementService _placementService;
-            private List<(Message Message, TaskCompletionSource Completion)> _messages = new();
+            private List<(Message Message, TaskCompletionSource Completion)>? _messages = new();
 
             public PlacementWorker(PlacementService placementService)
             {
