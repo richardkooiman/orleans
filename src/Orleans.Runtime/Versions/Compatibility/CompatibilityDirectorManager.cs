@@ -32,7 +32,7 @@ namespace Orleans.Runtime.Versions.Compatibility
                 ? director 
                 : Default;
         }
-        public void SetStrategy(CompatibilityStrategy strategy)
+        public void SetStrategy(CompatibilityStrategy? strategy)
         {
             var director = ResolveVersionDirector(this.serviceProvider, strategy ?? this.strategyFromConfig);
             Default = director;

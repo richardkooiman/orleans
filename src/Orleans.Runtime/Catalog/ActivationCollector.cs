@@ -126,7 +126,7 @@ namespace Orleans.Runtime
         /// </summary>
         /// <param name="item">The grain context.</param>
         /// <returns><see langword="true"/> if collection was canceled, <see langword="false"/> otherwise.</returns>
-        public bool TryCancelCollection(ICollectibleGrainContext item)
+        public bool TryCancelCollection(ICollectibleGrainContext? item)
         {
             if (item is null) return false;
             if (item.IsExemptFromCollection) return false;

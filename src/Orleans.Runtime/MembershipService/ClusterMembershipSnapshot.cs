@@ -71,7 +71,7 @@ namespace Orleans.Runtime
         /// Returns a <see cref="ClusterMembershipUpdate"/> which represents the change in cluster membership from the provided snapshot to this instance.
         /// </summary>
         /// <returns>A <see cref="ClusterMembershipUpdate"/> which represents the change in cluster membership from the provided snapshot to this instance.</returns>
-        public ClusterMembershipUpdate CreateUpdate(ClusterMembershipSnapshot previous)
+        public ClusterMembershipUpdate CreateUpdate(ClusterMembershipSnapshot? previous)
         {
             if (previous is null) throw new ArgumentNullException(nameof(previous));
             if (this.Version < previous.Version)

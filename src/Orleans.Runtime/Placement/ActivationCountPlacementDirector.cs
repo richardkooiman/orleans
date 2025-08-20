@@ -31,7 +31,7 @@ namespace Orleans.Runtime.Placement
 
         public ActivationCountPlacementDirector(
             ILocalSiloDetails localSiloDetails,
-            DeploymentLoadPublisher deploymentLoadPublisher, 
+            DeploymentLoadPublisher? deploymentLoadPublisher, 
             IOptions<ActivationCountBasedPlacementOptions> options)
         {
             _localAddress = localSiloDetails.SiloAddress;

@@ -32,7 +32,7 @@ namespace Orleans.Runtime.Versions.Selector
                 : Default;
         }
 
-        public void SetSelector(VersionSelectorStrategy strategy)
+        public void SetSelector(VersionSelectorStrategy? strategy)
         {
             var selector = ResolveVersionSelector(this.serviceProvider, strategy ?? this.strategyFromConfig);
             Default = selector;

@@ -118,7 +118,7 @@ namespace Orleans.Hosting
         /// </summary>
         public static ISiloBuilder UseDevelopmentClustering(
             this ISiloBuilder builder,
-            Action<OptionsBuilder<DevelopmentClusterMembershipOptions>> configureOptions)
+            Action<OptionsBuilder<DevelopmentClusterMembershipOptions>>? configureOptions)
         {
             return builder.ConfigureServices(
                 services =>

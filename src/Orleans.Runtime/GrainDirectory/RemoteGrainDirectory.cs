@@ -30,7 +30,7 @@ namespace Orleans.Runtime.GrainDirectory
             return router.RegisterAsync(address, previousAddress, hopCount);
         }
 
-        public Task RegisterMany(List<GrainAddress> addresses)
+        public Task RegisterMany(List<GrainAddress>? addresses)
         {
             if (addresses == null || addresses.Count == 0)
             {

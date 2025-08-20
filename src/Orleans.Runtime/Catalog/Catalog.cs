@@ -103,7 +103,7 @@ namespace Orleans.Runtime
         public IGrainContext GetOrCreateActivation(
             in GrainId grainId,
             Dictionary<string, object> requestContextData,
-            MigrationContext rehydrationContext)
+            MigrationContext? rehydrationContext)
         {
             if (TryGetGrainContext(grainId, out var result))
             {

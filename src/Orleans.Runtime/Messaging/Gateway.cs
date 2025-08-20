@@ -413,7 +413,7 @@ namespace Orleans.Runtime.Messaging
                 }
             }
 
-            private bool TrySend(GatewayInboundConnection connection, Message message)
+            private bool TrySend(GatewayInboundConnection? connection, Message message)
             {
                 if (connection is null)
                 {

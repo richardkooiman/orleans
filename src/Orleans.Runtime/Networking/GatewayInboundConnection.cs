@@ -177,7 +177,7 @@ namespace Orleans.Runtime.Messaging
             }
         }
 
-        protected override void RetryMessage(Message msg, Exception ex = null)
+        protected override void RetryMessage(Message? msg, Exception ex = null)
         {
             if (msg == null) return;
 

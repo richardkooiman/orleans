@@ -444,7 +444,7 @@ namespace Orleans.Runtime.MembershipService
             };
         }
 
-        private void ProcessTableUpdate(MembershipTableData table, string caller)
+        private void ProcessTableUpdate(MembershipTableData? table, string caller)
         {
             if (table is null) throw new ArgumentNullException(nameof(table));
             LogDebugProcessTableUpdate(this.log, caller, table);
