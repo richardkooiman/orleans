@@ -20,7 +20,7 @@ namespace Orleans.Runtime.GrainDirectory
             _clientDirectory = clientDirectory;
         }
 
-        public async ValueTask<GrainAddress> Lookup(GrainId grainId)
+        public async ValueTask<GrainAddress?> Lookup(GrainId grainId)
         {
             if (!ClientGrainId.TryParse(grainId, out var clientGrainId))
             {
@@ -31,9 +31,9 @@ namespace Orleans.Runtime.GrainDirectory
             return SelectAddress(results, grainId);
         }
 
-        private GrainAddress SelectAddress(List<GrainAddress> results, GrainId grainId)
+        private GrainAddress? SelectAddress(List<GrainAddress> results, GrainId grainId)
         {
-            GrainAddress unadjustedResult = null;
+            GrainAddress? unadjustedResult = null;
             if (results is { Count: > 0 })
             {
                 foreach (var location in results)

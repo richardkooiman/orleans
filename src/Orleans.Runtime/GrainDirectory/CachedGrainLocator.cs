@@ -42,7 +42,7 @@ namespace Orleans.Runtime.GrainDirectory
             this.cache = GrainDirectoryCacheFactory.CreateCustomGrainDirectoryCache(serviceProvider, grainDirectoryOptions.Value);
         }
 
-        public async ValueTask<GrainAddress> Lookup(GrainId grainId)
+        public async ValueTask<GrainAddress?> Lookup(GrainId grainId)
         {
             var grainType = grainId.Type;
             if (grainType.IsClient() || grainType.IsSystemTarget())
@@ -80,7 +80,7 @@ namespace Orleans.Runtime.GrainDirectory
             return entry;
         }
 
-        public async Task<GrainAddress> Register(GrainAddress address, GrainAddress previousAddress)
+        public async Task<GrainAddress?> Register(GrainAddress address, GrainAddress previousAddress)
         {
             var grainType = address.GrainId.Type;
             if (grainType.IsClient() || grainType.IsSystemTarget())
