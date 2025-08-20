@@ -1,3 +1,4 @@
+#nullable enable
 using Orleans.Metadata;
 
 namespace Orleans.Runtime.Placement

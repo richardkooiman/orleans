@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Immutable;
 
 namespace Orleans.Runtime.MembershipService

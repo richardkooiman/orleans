@@ -1,3 +1,4 @@
+#nullable enable
 namespace Orleans.Runtime.ConsistentRing
 {
     // someday, this will be the only provider for the ring, i.e., directory service will use this

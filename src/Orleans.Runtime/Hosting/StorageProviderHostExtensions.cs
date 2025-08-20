@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Orleans.Storage;
 using Microsoft.Extensions.DependencyInjection;

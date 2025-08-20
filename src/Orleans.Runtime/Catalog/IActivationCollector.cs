@@ -1,3 +1,4 @@
+#nullable enable
 ﻿namespace Orleans.Runtime
 {
     internal interface IActivationCollector

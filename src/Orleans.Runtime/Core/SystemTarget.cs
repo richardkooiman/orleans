@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,9 +21,9 @@ namespace Orleans.Runtime
         private readonly SystemTargetGrainId _id;
         private readonly SystemTargetShared _shared;
         private readonly HashSet<IGrainTimer> _timers = [];
-        private GrainReference _selfReference;
-        private Message _running;
-        private Dictionary<Type, object> _components = new Dictionary<Type, object>();
+        private GrainReference? _selfReference;
+        private Message? _running;
+        private Dictionary<Type, object>? _components = new Dictionary<Type, object>();
 
         /// <summary>Silo address of the system target.</summary>
         public SiloAddress Silo => _shared.SiloAddress;
@@ -90,7 +91,7 @@ namespace Orleans.Runtime
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
         /// <returns>The component with the specified type.</returns>
-        public TComponent GetComponent<TComponent>()
+        public TComponent? GetComponent<TComponent>()
         {
             TComponent result;
             if (this is TComponent instanceResult)
@@ -114,7 +115,7 @@ namespace Orleans.Runtime
         }
 
         /// <inheritdoc />
-        public void SetComponent<TComponent>(TComponent instance) where TComponent : class
+        public void SetComponent<TComponent>(TComponent? instance) where TComponent : class
         {
             if (this is TComponent)
             {

@@ -1,3 +1,4 @@
+#nullable enable
 using Orleans.Versions.Compatibility;
 
 namespace Orleans.Runtime.Versions.Compatibility

@@ -1,3 +1,4 @@
+#nullable enable
 ﻿using Microsoft.Extensions.Options;
 
 namespace Orleans.Configuration

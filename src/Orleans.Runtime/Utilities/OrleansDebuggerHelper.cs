@@ -1,3 +1,4 @@
+#nullable enable
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Orleans.Runtime.Utilities

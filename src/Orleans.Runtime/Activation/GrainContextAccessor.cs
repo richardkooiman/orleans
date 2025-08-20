@@ -1,3 +1,4 @@
+#nullable enable
 namespace Orleans.Runtime
 {
     internal class GrainContextAccessor : IGrainContextAccessor
