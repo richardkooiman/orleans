@@ -281,6 +281,11 @@ namespace UnitTests.Runtime
             activation.IsExemptFromCollection.Returns(false);
             activation.IsInactive.Returns(true);
             activation.Deactivated.Returns(Task.CompletedTask).AndDoes(_ => { Interlocked.Decrement(ref collector._activationCount); });
+#if NET9_0_OR_GREATER
+            activation.Lock.Returns(new Lock());
+#else
+            activation.Lock.Returns(new object());
+#endif
 
             return (IActivationWorkingSetMember)activation;
         }

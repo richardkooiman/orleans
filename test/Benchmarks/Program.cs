@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using BenchmarkDotNet.Running;
 using Benchmarks.MapReduce;
+using Benchmarks.ObjectHeaderContention;
 using Benchmarks.Ping;
 using Benchmarks.Transactions;
 using Benchmarks.GrainStorage;
@@ -293,6 +294,10 @@ internal class Program
             {
                 new Benchmarks.Dashboard.ManualTests().Run();
             },
+        ["ObjectHeaderContention"] = _ =>
+        {
+            BenchmarkRunner.Run<ObjectHeaderContentionBenchmark>();
+        },
         ["suite"] = args =>
         {
             _ = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);

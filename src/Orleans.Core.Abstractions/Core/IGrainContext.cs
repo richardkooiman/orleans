@@ -178,6 +178,20 @@ namespace Orleans.Runtime
         /// </summary>
         /// <param name="timeSpan">The period of time to delay activation collection for.</param>
         void DelayDeactivation(TimeSpan timeSpan);
+
+        /// <summary>
+        /// Gets the lock object used for synchronizing access to this grain context.
+        /// </summary>
+        /// <remarks>
+        /// This is a stable, per-instance lock object. Callers must use this property rather than
+        /// locking on the grain context instance directly, to avoid object header contention when
+        /// the instance is also used as a dictionary key.
+        /// </remarks>
+#if NET9_0_OR_GREATER
+        Lock Lock { get; }
+#else
+        object Lock { get; }
+#endif
     }
 
     /// <summary>

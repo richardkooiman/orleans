@@ -22,8 +22,9 @@ namespace Orleans.Runtime;
 
 /// <summary>
 /// Maintains additional per-activation state that is required for Orleans internal operations.
-/// MUST lock this object for any concurrent access
-/// MUST lock on `this` object because there are locks taken on ActivationData instances in various places in the codebase such as ActivationCollector.ScheduleCollection.
+/// MUST lock the <see cref="Lock"/> object for any concurrent access.
+/// All callers (internal and external) must use the <see cref="Lock"/> property rather than
+/// locking on the activation instance directly, to avoid object header contention.
 /// Consider: compartmentalize by usage, e.g., using separate interfaces for data for catalog, etc.
 /// </summary>
 [DebuggerDisplay("GrainId = {GrainId}, State = {State}, Waiting = {WaitingCount}, Executing = {IsCurrentlyExecuting}")]
@@ -66,6 +67,13 @@ internal sealed partial class ActivationData :
 #pragma warning restore IDE0052 // Remove unread private members
 
     private Activity? _activationActivity;
+
+    /// <inheritdoc/>
+#if NET9_0_OR_GREATER
+    public Lock Lock { get; } = new();
+#else
+    public object Lock { get; } = new();
+#endif
 
     /// <summary>
     /// Constants for activity error event names used during activation lifecycle.
@@ -118,8 +126,7 @@ internal sealed partial class ActivationData :
     public void Start(IGrainActivator grainActivator)
     {
         Debug.Assert(Equals(ActivationTaskScheduler, TaskScheduler.Current));
-        // locking on `this` is intentional as there are other places in the codebase taking locks on ActivationData instances
-        lock (this)
+        lock (Lock)
         {
             try
             {
@@ -155,7 +162,7 @@ internal sealed partial class ActivationData :
         get
         {
             if (_lifecycle is { } lifecycle) return lifecycle;
-            lock (this) { return _lifecycle ??= new GrainLifecycle(_shared.Logger); }
+            lock (Lock) { return _lifecycle ??= new GrainLifecycle(_shared.Logger); }
         }
     }
 
@@ -186,7 +193,7 @@ internal sealed partial class ActivationData :
         get => _extras?.ForwardingAddress;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.ForwardingAddress = value;
@@ -203,7 +210,7 @@ internal sealed partial class ActivationData :
         get => _extras?.PreviousRegistration;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.PreviousRegistration = value;
@@ -218,7 +225,7 @@ internal sealed partial class ActivationData :
         get => _extras?.DeactivationReason ?? default;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.DeactivationReason = value;
@@ -231,7 +238,7 @@ internal sealed partial class ActivationData :
         get => _extras?.Timers;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.Timers = value;
@@ -244,7 +251,7 @@ internal sealed partial class ActivationData :
         get => _extras?.DeactivationStartTime;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.DeactivationStartTime = value;
@@ -257,7 +264,7 @@ internal sealed partial class ActivationData :
         get => _extras?.IsStuckDeactivating ?? false;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.IsStuckDeactivating = value;
@@ -270,7 +277,7 @@ internal sealed partial class ActivationData :
         get => _extras?.IsStuckProcessingMessage ?? false;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.IsStuckProcessingMessage = value;
@@ -283,7 +290,7 @@ internal sealed partial class ActivationData :
         get => _extras?.DehydrationContext;
         set
         {
-            lock (this)
+            lock (Lock)
             {
                 _extras ??= new();
                 _extras.DehydrationContext = value;
@@ -360,7 +367,7 @@ internal sealed partial class ActivationData :
             throw new ArgumentException("Cannot override a component which is implemented by this grain context");
         }
 
-        lock (this)
+        lock (Lock)
         {
             if (instance == null)
             {
@@ -377,7 +384,7 @@ internal sealed partial class ActivationData :
     {
         ArgumentNullException.ThrowIfNull(grainInstance);
 
-        lock (this)
+        lock (Lock)
         {
             if (GrainInstance is not null)
             {
@@ -444,7 +451,7 @@ internal sealed partial class ActivationData :
 
     internal int GetRequestCount()
     {
-        lock (this)
+        lock (Lock)
         {
             return _runningRequests.Count + WaitingCount;
         }
@@ -452,7 +459,7 @@ internal sealed partial class ActivationData :
 
     internal List<Message> DequeueAllWaitingRequests()
     {
-        lock (this)
+        lock (Lock)
         {
             var result = new List<Message>(_waitingRequests.Count);
             foreach (var (message, _) in _waitingRequests)
@@ -510,7 +517,7 @@ internal sealed partial class ActivationData :
 
     private void ScheduleOperation(object operation)
     {
-        lock (this)
+        lock (Lock)
         {
             _pendingOperations ??= new();
             _pendingOperations.Enqueue(operation);
@@ -521,7 +528,7 @@ internal sealed partial class ActivationData :
 
     private void CancelPendingOperations()
     {
-        lock (this)
+        lock (Lock)
         {
             // If the grain is currently activating, cancel that operation.
             if (_pendingOperations is not { Count: > 0 } operations)
@@ -569,7 +576,7 @@ internal sealed partial class ActivationData :
 
     public void Migrate(Dictionary<string, object>? requestContext, CancellationToken cancellationToken = default)
     {
-        lock (this)
+        lock (Lock)
         {
             if (State is not (ActivationState.Activating or ActivationState.Valid or ActivationState.Deactivating))
             {
@@ -595,7 +602,7 @@ internal sealed partial class ActivationData :
             ? ActivitySources.LifecycleGrainSource.StartActivity(ActivityNames.DeactivateGrain, ActivityKind.Internal, parentContext:parent)
             : ActivitySources.LifecycleGrainSource.StartActivity(ActivityNames.DeactivateGrain);
         
-        lock (this)
+        lock (Lock)
         {
             try
             {
@@ -677,7 +684,7 @@ internal sealed partial class ActivationData :
 
     void IGrainTimerRegistry.OnTimerCreated(IGrainTimer timer)
     {
-        lock (this)
+        lock (Lock)
         {
             Timers ??= new HashSet<IGrainTimer>();
             Timers.Add(timer);
@@ -686,7 +693,7 @@ internal sealed partial class ActivationData :
 
     void IGrainTimerRegistry.OnTimerDisposed(IGrainTimer timer)
     {
-        lock (this) // need to lock since dispose can be called on finalizer thread, outside grain context (not single threaded).
+        lock (Lock) // need to lock since dispose can be called on finalizer thread, outside grain context (not single threaded).
         {
             if (Timers is null)
             {
@@ -699,7 +706,7 @@ internal sealed partial class ActivationData :
 
     private void DisposeTimers()
     {
-        lock (this)
+        lock (Lock)
         {
             if (Timers is null)
             {
@@ -724,7 +731,7 @@ internal sealed partial class ActivationData :
         var longQueueTimeDuration = options.RequestQueueDelayWarningTime;
 
         List<string>? diagnostics = null;
-        lock (this)
+        lock (Lock)
         {
             if (State != ActivationState.Valid)
             {
@@ -826,7 +833,7 @@ internal sealed partial class ActivationData :
 
     internal string ToDetailedString(bool includeExtraDetails = false)
     {
-        lock (this)
+        lock (Lock)
         {
             var currentlyExecuting = includeExtraDetails ? _blockingRequest : null;
             return @$"[Activation: {Address.SiloAddress}/{GrainId}{ActivationId} {GetActivationInfoString()} State={State} NonReentrancyQueueSize={WaitingCount} NumRunning={_runningRequests.Count} IdlenessTimeSpan={GetIdleness()} CollectionAgeLimit={_shared.CollectionAgeLimit}{(currentlyExecuting != null ? " CurrentlyExecuting=" : null)}{currentlyExecuting}]";
@@ -859,7 +866,7 @@ internal sealed partial class ActivationData :
 
         CancelPendingOperations();
 
-        lock (this)
+        lock (Lock)
         {
             _shared.InternalRuntime.ActivationWorkingSet.OnDeactivated(this);
             SetState(ActivationState.Invalid);
@@ -959,7 +966,7 @@ internal sealed partial class ActivationData :
     bool IActivationWorkingSetMember.IsCandidateForRemoval(bool wouldRemove)
     {
         const int IdlenessLowerBound = 10_000;
-        lock (this)
+        lock (Lock)
         {
             var inactive = IsInactive && _idleDuration.ElapsedMilliseconds > IdlenessLowerBound;
 
@@ -986,7 +993,7 @@ internal sealed partial class ActivationData :
                 if (!IsCurrentlyExecuting)
                 {
                     bool hasPendingOperations;
-                    lock (this)
+                    lock (Lock)
                     {
                         hasPendingOperations = _pendingOperations is { Count: > 0 };
                     }
@@ -1014,7 +1021,7 @@ internal sealed partial class ActivationData :
             do
             {
                 Message? message = null;
-                lock (this)
+                lock (Lock)
                 {
                     if (_waitingRequests.Count <= i)
                     {
@@ -1213,7 +1220,7 @@ internal sealed partial class ActivationData :
             object? op = null;
             while (true)
             {
-                lock (this)
+                lock (Lock)
                 {
                     Debug.Assert(_pendingOperations is not null);
 
@@ -1291,7 +1298,7 @@ internal sealed partial class ActivationData :
                 rehydrateSpan?.SetTag(ActivityTagKeys.ActivationId, ActivationId.ToString());
             }
 
-            lock (this)
+            lock (Lock)
             {
                 if (State != ActivationState.Creating)
                 {
@@ -1339,7 +1346,7 @@ internal sealed partial class ActivationData :
     {
         LogDehydratingActivation(_shared.Logger);
 
-        lock (this)
+        lock (Lock)
         {
             Debug.Assert(context is not null);
 
@@ -1453,7 +1460,7 @@ internal sealed partial class ActivationData :
     /// <param name="message">The message that has just completed processing.</param>
     private void OnCompletedRequest(Message message)
     {
-        lock (this)
+        lock (Lock)
         {
             _runningRequests.Remove(message);
 
@@ -1507,7 +1514,7 @@ internal sealed partial class ActivationData :
 
     private void ReceiveResponse(Message message)
     {
-        lock (this)
+        lock (Lock)
         {
             if (State == ActivationState.Invalid)
             {
@@ -1533,7 +1540,7 @@ internal sealed partial class ActivationData :
             return;
         }
 
-        lock (this)
+        lock (Lock)
         {
             _waitingRequests.Add((message, CoarseStopwatch.StartNew()));
         }
@@ -1546,7 +1553,7 @@ internal sealed partial class ActivationData :
     /// </summary>
     private void RejectAllQueuedMessages()
     {
-        lock (this)
+        lock (Lock)
         {
             List<Message> msgs = DequeueAllWaitingRequests();
             if (msgs == null || msgs.Count <= 0) return;
@@ -1565,7 +1572,7 @@ internal sealed partial class ActivationData :
 
     private void RerouteAllQueuedMessages()
     {
-        lock (this)
+        lock (Lock)
         {
             List<Message> msgs = DequeueAllWaitingRequests();
             if (msgs is not { Count: > 0 })
@@ -1729,7 +1736,7 @@ internal sealed partial class ActivationData :
                 }
             }
 
-            lock (this)
+            lock (Lock)
             {
                 SetState(ActivationState.Activating);
             }
@@ -1811,7 +1818,7 @@ internal sealed partial class ActivationData :
                     }
                 }
 
-                lock (this)
+                lock (Lock)
                 {
                     if (State is ActivationState.Activating)
                     {
@@ -2066,7 +2073,7 @@ internal sealed partial class ActivationData :
 
     private TaskCompletionSource<bool> GetDeactivationCompletionSource()
     {
-        lock (this)
+        lock (Lock)
         {
             _extras ??= new();
             return _extras.DeactivationTask ??= new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2194,7 +2201,7 @@ internal sealed partial class ActivationData :
         {
             Message? message = null;
             var wasWaiting = false;
-            lock (this)
+            lock (Lock)
             {
                 // Check the running requests.
                 foreach (var candidate in _runningRequests.Keys)
